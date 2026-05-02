@@ -39,8 +39,7 @@
   flex: 1;
 }
 
-.rr-close,
-.rr-minimize {
+.rr-close {
   background: none;
   border: none;
   color: #94a3b8;
@@ -51,8 +50,7 @@
   line-height: 1;
 }
 
-.rr-close:hover,
-.rr-minimize:hover {
+.rr-close:hover {
   color: #f8fafc;
   background: rgba(255, 255, 255, 0.1);
 }
@@ -205,3 +203,55 @@
 }
 
 .rr-error .rr-btn { margin-top: 12px; }
+
+.rr-icon-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: rr-slide-in 0.3s ease-out;
+}
+
+.rr-icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.rr-icon-btn:hover,
+.rr-icon-btn:focus-visible {
+  transform: scale(1.08);
+  background: #1e293b;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.24);
+  outline: none;
+}
+
+.rr-icon-tooltip {
+  background: #0f172a;
+  color: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(6px);
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.rr-icon-wrap:hover .rr-icon-tooltip,
+.rr-icon-wrap:focus-within .rr-icon-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+

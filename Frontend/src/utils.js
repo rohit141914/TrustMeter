@@ -5,8 +5,7 @@ export function createCard() {
 }
 
 export function clearContent(shadow) {
-  const existing = shadow.querySelector(".rr-card");
-  if (existing) existing.remove();
+  shadow.querySelectorAll(".rr-card, .rr-icon-wrap").forEach((el) => el.remove());
 }
 
 export function dismiss() {
@@ -18,4 +17,15 @@ export function escapeHTML(str) {
   const div = document.createElement("div");
   div.textContent = str;
   return div.innerHTML;
+}
+
+export function createIconWrap({ onClick, tooltip }) {
+  const wrap = document.createElement("div");
+  wrap.className = "rr-icon-wrap";
+  wrap.innerHTML = `
+    <span class="rr-icon-tooltip">${escapeHTML(tooltip)}</span>
+    <button class="rr-icon-btn" aria-label="${escapeHTML(tooltip)}">&#x1f6e1;</button>
+  `;
+  wrap.querySelector(".rr-icon-btn").onclick = onClick;
+  return wrap;
 }

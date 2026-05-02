@@ -7,9 +7,13 @@ import {
   MAX_POLICIES_TO_FETCH,
   MSG,
 } from "./constants";
-import { createCard, clearContent, dismiss, escapeHTML } from "./utils";
+import { createCard, clearContent, createIconWrap, dismiss, escapeHTML } from "./utils";
 
 const domain = window.location.hostname;
+
+let shadowRoot = null;
+let cachedResult = null;
+let analysisInFlight = false;
 
 // Skip browser internal pages
 if (
@@ -22,61 +26,83 @@ if (
 } else {
   chrome.storage.local.get([domain], (result) => {
     if (result[domain]) return;
-    scanForPolicies();
+    injectIcon();
   });
 }
 
-// --- Step 1: Collect and pre-filter links, then send to LLM for precise identification ---
-function scanForPolicies() {
-  const seen = new Set();
-  const candidateLinks = [];
-  for (const a of document.querySelectorAll("a[href]")) {
-    const href = a.href;
-    if (!href || href.startsWith("javascript:") || href.startsWith("#")) continue;
-    if (seen.has(href)) continue;
-    seen.add(href);
-    const label = a.textContent.replace(/\s+/g, " ").trim();
-    const combined = (label + " " + href).toLowerCase();
-    if (POLICY_BROAD_WORDS.some((w) => combined.includes(w))) {
-      candidateLinks.push({ url: href, label: label || href });
+// --- Shadow DOM host (created once, reused across icon ↔ card transitions) ---
+function getShadow() {
+  if (shadowRoot) return shadowRoot;
+
+  const host = document.createElement("div");
+  host.id = "read-rules-host";
+  host.style.cssText =
+    "all:initial; position:fixed; z-index:2147483647; top:50%; right:20px; transform:translateY(-50%);";
+  document.body.appendChild(host);
+
+  const shadow = host.attachShadow({ mode: "closed" });
+  const style = document.createElement("style");
+  style.textContent = overlayStyles;
+  shadow.appendChild(style);
+
+  shadowRoot = shadow;
+  return shadow;
+}
+
+// --- Icon: default resting state ---
+function injectIcon() {
+  renderIcon(getShadow());
+}
+
+function renderIcon(shadow) {
+  clearContent(shadow);
+  shadow.appendChild(
+    createIconWrap({
+      onClick: () => triggerAnalysis(shadow),
+      tooltip: "Start analysing",
+    })
+  );
+}
+
+function collapseToIcon(shadow) {
+  renderIcon(shadow);
+}
+
+// --- Click handler: run the full analysis pipeline (or replay cached result) ---
+async function triggerAnalysis(shadow) {
+  if (cachedResult) {
+    showResult(shadow, cachedResult);
+    return;
+  }
+  if (analysisInFlight) {
+    showLoading(shadow);
+    return;
+  }
+
+  showLoading(shadow);
+  analysisInFlight = true;
+
+  try {
+    const candidateLinks = collectCandidateLinks();
+    if (candidateLinks.length === 0) {
+      showEmpty(shadow);
+      return;
     }
-  }
-  if (candidateLinks.length === 0) return;
-  identifyAndAnalyze(candidateLinks);
-}
 
-// --- Step 1b: Ask LLM to filter out only policy links ---
-async function identifyAndAnalyze(allLinks) {
-  let host = null;
-  try {
-    const policyLinks = await new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage(
-        { type: MSG.IDENTIFY_LINKS, links: allLinks, domain },
-        (res) => res?.success ? resolve(res.data) : reject(new Error(res?.error || "Failed to identify links"))
-      );
+    const policyLinks = await sendMessage({
+      type: MSG.IDENTIFY_LINKS,
+      links: candidateLinks,
+      domain,
     });
-    if (!policyLinks || policyLinks.length === 0) return; // no policy links — stay silent
-    host = createOverlayHost();
-    showLoading(host);
-    await analyzePolicies(policyLinks, host);
-  } catch (err) {
-    console.error("Read Rules: Error identifying policy links:", err);
-    if (host) showError(host);
-  }
-}
+    if (!policyLinks || policyLinks.length === 0) {
+      showEmpty(shadow);
+      return;
+    }
 
-// --- Step 2: Fetch policy pages and extract text (via background to bypass CORS) ---
-async function analyzePolicies(policyLinks, existingHost = null) {
-  const host = existingHost ?? createOverlayHost();
-  if (!existingHost) showLoading(host);
-
-  try {
     const linksToFetch = policyLinks.slice(0, MAX_POLICIES_TO_FETCH);
-    const fetchedPages = await new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage(
-        { type: MSG.FETCH_POLICY_PAGES, links: linksToFetch },
-        (res) => res?.success ? resolve(res.data) : reject(new Error(res?.error || "Failed to fetch policy pages"))
-      );
+    const fetchedPages = await sendMessage({
+      type: MSG.FETCH_POLICY_PAGES,
+      links: linksToFetch,
     });
 
     // Parse HTML here — DOMParser is available in content scripts but not in service workers
@@ -91,45 +117,57 @@ async function analyzePolicies(policyLinks, existingHost = null) {
 
     const validPolicies = policyTexts.filter(Boolean);
     if (validPolicies.length === 0) {
-      showError(host);
+      showError(shadow);
       return;
     }
 
-    // Combine extracted policy text and send to backend
     const combined = validPolicies
       .map((p) => `[${p.label}]\n${p.text}`)
       .join("\n\n---\n\n");
 
-    const response = await new Promise((resolve, reject) => {
-      const links = validPolicies.map((p) => ({ label: p.label, url: p.url }));
-      chrome.runtime.sendMessage({ type: MSG.SUMMARIZE, content: combined, domain, links }, (res) => {
-        if (res?.success) resolve(res.data);
-        else reject(new Error(res?.error || "Backend request failed"));
-      });
+    const links = validPolicies.map((p) => ({ label: p.label, url: p.url }));
+    const response = await sendMessage({
+      type: MSG.SUMMARIZE,
+      content: combined,
+      domain,
+      links,
     });
 
-    showResult(host, response);
+    cachedResult = response;
+    showResult(shadow, response);
   } catch (err) {
     console.error("Read Rules: Error analyzing policies:", err);
-    showError(host);
+    showError(shadow);
+  } finally {
+    analysisInFlight = false;
   }
 }
 
-// --- Shadow DOM host ---
-function createOverlayHost() {
-  const host = document.createElement("div");
-  host.id = "read-rules-host";
-  host.style.cssText =
-    "all:initial; position:fixed; z-index:2147483647; bottom:20px; right:20px;";
-  document.body.appendChild(host);
+// --- Helpers ---
+function collectCandidateLinks() {
+  const seen = new Set();
+  const candidates = [];
+  for (const a of document.querySelectorAll("a[href]")) {
+    const href = a.href;
+    if (!href || href.startsWith("javascript:") || href.startsWith("#")) continue;
+    if (seen.has(href)) continue;
+    seen.add(href);
+    const label = a.textContent.replace(/\s+/g, " ").trim();
+    const combined = (label + " " + href).toLowerCase();
+    if (POLICY_BROAD_WORDS.some((w) => combined.includes(w))) {
+      candidates.push({ url: href, label: label || href });
+    }
+  }
+  return candidates;
+}
 
-  const shadow = host.attachShadow({ mode: "closed" });
-
-  const style = document.createElement("style");
-  style.textContent = overlayStyles;
-  shadow.appendChild(style);
-
-  return shadow;
+function sendMessage(payload) {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(payload, (res) => {
+      if (res?.success) resolve(res.data);
+      else reject(new Error(res?.error || "Background request failed"));
+    });
+  });
 }
 
 // --- Loading State ---
@@ -148,7 +186,7 @@ function showLoading(shadow) {
     </div>
   `;
   shadow.appendChild(card);
-  card.querySelector(".rr-close").onclick = () => dismiss();
+  card.querySelector(".rr-close").onclick = () => collapseToIcon(shadow);
 }
 
 // --- Result State ---
@@ -188,7 +226,6 @@ function showResult(shadow, data) {
     <div class="rr-header">
       <span class="rr-logo">&#x1f6e1;</span>
       <span class="rr-title">Read Rules</span>
-      <button class="rr-minimize" aria-label="Minimize">&#x2015;</button>
       <button class="rr-close" aria-label="Close">&times;</button>
     </div>
     <div class="rr-body">
@@ -209,22 +246,31 @@ function showResult(shadow, data) {
 
   shadow.appendChild(card);
 
-  let minimized = false;
-  const body = card.querySelector(".rr-body");
-  card.querySelector(".rr-minimize").onclick = () => {
-    minimized = !minimized;
-    body.style.display = minimized ? "none" : "block";
-    card.querySelector(".rr-minimize").innerHTML = minimized
-      ? "&#x2750;"
-      : "&#x2015;";
-  };
-
-  card.querySelector(".rr-close").onclick = () => dismiss();
+  card.querySelector(".rr-close").onclick = () => collapseToIcon(shadow);
   card.querySelector("#rr-dismiss").onclick = () => dismiss();
   card.querySelector("#rr-accept").onclick = () => {
     chrome.storage.local.set({ [domain]: true });
     dismiss();
   };
+}
+
+// --- Empty State (no policies found on this page) ---
+function showEmpty(shadow) {
+  clearContent(shadow);
+  const card = createCard();
+  card.innerHTML = `
+    <div class="rr-header">
+      <span class="rr-logo">&#x1f6e1;</span>
+      <span class="rr-title">Read Rules</span>
+      <button class="rr-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="rr-body rr-error">
+      <p><strong>No policies found on this page.</strong></p>
+      <p>Read Rules couldn't detect any Terms or Privacy links here.</p>
+    </div>
+  `;
+  shadow.appendChild(card);
+  card.querySelector(".rr-close").onclick = () => collapseToIcon(shadow);
 }
 
 // --- Error State ---
@@ -244,11 +290,9 @@ function showError(shadow) {
     </div>
   `;
   shadow.appendChild(card);
-  card.querySelector(".rr-close").onclick = () => dismiss();
+  card.querySelector(".rr-close").onclick = () => collapseToIcon(shadow);
   card.querySelector("#rr-retry").onclick = () => {
-    dismiss();
-    scanForPolicies();
+    cachedResult = null;
+    triggerAnalysis(shadow);
   };
 }
-
-
