@@ -18,14 +18,3 @@ export function escapeHTML(str) {
   div.textContent = str;
   return div.innerHTML;
 }
-
-export function createIconWrap({ onClick, tooltip }) {
-  const wrap = document.createElement("div");
-  wrap.className = "rr-icon-wrap";
-  wrap.innerHTML = `
-    <span class="rr-icon-tooltip">${escapeHTML(tooltip)}</span>
-    <button class="rr-icon-btn" aria-label="${escapeHTML(tooltip)}">&#x1f6e1;</button>
-  `;
-  wrap.querySelector(".rr-icon-btn").onclick = onClick;
-  return wrap;
-}
