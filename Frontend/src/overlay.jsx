@@ -14,6 +14,7 @@ const domain = window.location.hostname;
 let shadowRoot = null;
 let cachedResult = null;
 let analysisInFlight = false;
+let theme = "dark";
 
 // Skip browser internal pages
 if (
@@ -170,6 +171,22 @@ function sendMessage(payload) {
   });
 }
 
+function wireThemeToggle(card) {
+  const btn = card.querySelector(".rr-theme-toggle");
+  if (!btn) return;
+  applyTheme(card);
+  btn.onclick = () => {
+    theme = theme === "light" ? "dark" : "light";
+    applyTheme(card);
+  };
+}
+
+function applyTheme(card) {
+  card.classList.toggle("rr-theme-dark", theme === "dark");
+  const btn = card.querySelector(".rr-theme-toggle");
+  if (btn) btn.innerHTML = theme === "dark" ? "&#x2600;&#xfe0f;" : "&#x1f319;";
+}
+
 // --- Loading State ---
 function showLoading(shadow) {
   clearContent(shadow);
@@ -178,6 +195,7 @@ function showLoading(shadow) {
     <div class="rr-header">
       <span class="rr-logo">&#x1f6e1;</span>
       <span class="rr-title">Read Rules</span>
+      <button class="rr-theme-toggle" aria-label="Toggle theme"></button>
       <button class="rr-close" aria-label="Close">&times;</button>
     </div>
     <div class="rr-body rr-loading">
@@ -187,6 +205,7 @@ function showLoading(shadow) {
   `;
   shadow.appendChild(card);
   card.querySelector(".rr-close").onclick = () => collapseToIcon(shadow);
+  wireThemeToggle(card);
 }
 
 // --- Result State ---
@@ -200,6 +219,7 @@ function showResult(shadow, data) {
   const clauses = data.clauses || [];
 
   const risk = RISK_COLORS[riskLevel] || RISK_COLORS.unknown;
+  const riskKey = RISK_COLORS[riskLevel] ? riskLevel : "unknown";
 
   let clausesHTML = "";
   if (clauses.length > 0) {
@@ -208,10 +228,10 @@ function showResult(shadow, data) {
         <h4>Flagged Clauses</h4>
         ${clauses
           .map((c) => {
-            const cr = RISK_COLORS[c.risk] || RISK_COLORS.unknown;
+            const riskKey = RISK_COLORS[c.risk] ? c.risk : "unknown";
             return `
-            <div class="rr-clause" style="border-left:3px solid ${cr.border}; background:${cr.bg};">
-              <span class="rr-clause-badge" style="color:${cr.text};">${escapeHTML((c.risk || "info").toUpperCase())}</span>
+            <div class="rr-clause rr-risk-${riskKey}">
+              <span class="rr-clause-badge">${escapeHTML((c.risk || "info").toUpperCase())}</span>
               <p class="rr-clause-label">What the policy says</p>
               <p class="rr-clause-text">${escapeHTML(c.text)}</p>
               ${c.reason ? `<p class="rr-clause-label">Why this matters</p><p class="rr-clause-reason">${escapeHTML(c.reason)}</p>` : ""}
@@ -226,11 +246,12 @@ function showResult(shadow, data) {
     <div class="rr-header">
       <span class="rr-logo">&#x1f6e1;</span>
       <span class="rr-title">Read Rules</span>
+      <button class="rr-theme-toggle" aria-label="Toggle theme"></button>
       <button class="rr-close" aria-label="Close">&times;</button>
     </div>
     <div class="rr-body">
-      <div class="rr-risk-badge" style="background:${risk.bg}; border:1px solid ${risk.border}; color:${risk.text};">
-        ${risk.label}
+      <div class="rr-risk-badge rr-risk-${riskKey}">
+        ${escapeHTML(risk.label)}
       </div>
       <div class="rr-summary">
         <h4>Summary</h4>
@@ -252,6 +273,7 @@ function showResult(shadow, data) {
     chrome.storage.local.set({ [domain]: true });
     dismiss();
   };
+  wireThemeToggle(card);
 }
 
 // --- Empty State (no policies found on this page) ---
@@ -262,6 +284,7 @@ function showEmpty(shadow) {
     <div class="rr-header">
       <span class="rr-logo">&#x1f6e1;</span>
       <span class="rr-title">Read Rules</span>
+      <button class="rr-theme-toggle" aria-label="Toggle theme"></button>
       <button class="rr-close" aria-label="Close">&times;</button>
     </div>
     <div class="rr-body rr-error">
@@ -271,6 +294,7 @@ function showEmpty(shadow) {
   `;
   shadow.appendChild(card);
   card.querySelector(".rr-close").onclick = () => collapseToIcon(shadow);
+  wireThemeToggle(card);
 }
 
 // --- Error State ---
@@ -281,6 +305,7 @@ function showError(shadow) {
     <div class="rr-header">
       <span class="rr-logo">&#x1f6e1;</span>
       <span class="rr-title">Read Rules</span>
+      <button class="rr-theme-toggle" aria-label="Toggle theme"></button>
       <button class="rr-close" aria-label="Close">&times;</button>
     </div>
     <div class="rr-body rr-error">
@@ -295,4 +320,5 @@ function showError(shadow) {
     cachedResult = null;
     triggerAnalysis(shadow);
   };
+  wireThemeToggle(card);
 }
