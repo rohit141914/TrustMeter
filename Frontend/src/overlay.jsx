@@ -297,7 +297,6 @@ function showResult(shadow, data) {
       ${clausesHTML}
       <div class="rr-actions">
         <button class="rr-btn rr-btn-primary" id="rr-accept">I've read this &ndash; Don't show again</button>
-        <button class="rr-btn rr-btn-ghost" id="rr-dismiss">Dismiss</button>
       </div>
     </div>
   `;
@@ -305,7 +304,6 @@ function showResult(shadow, data) {
   shadow.appendChild(card);
 
   card.querySelector(".rr-close").onclick = () => collapseToIcon(shadow);
-  card.querySelector("#rr-dismiss").onclick = () => dismiss();
   card.querySelector("#rr-accept").onclick = () => {
     chrome.storage.local.set({ [domain]: true });
     dismiss();
