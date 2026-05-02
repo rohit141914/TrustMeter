@@ -20,10 +20,14 @@ export function getShadow() {
   return shadow;
 }
 
-export function enableVerticalDrag(button, host) {
+export function enableVerticalDrag(handle, host, options = {}) {
+  const { swallowClickAfterDrag = true, ignoreSelector = null } = options;
   const DRAG_THRESHOLD = 5;
-  button.addEventListener("mousedown", (e) => {
+
+  handle.addEventListener("mousedown", (e) => {
     if (e.button !== 0) return;
+    if (ignoreSelector && e.target.closest(ignoreSelector)) return;
+
     const startY = e.clientY;
     const startTop = host.getBoundingClientRect().top;
     let dragging = false;
@@ -41,14 +45,14 @@ export function enableVerticalDrag(button, host) {
     const onUp = () => {
       document.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseup", onUp);
-      if (dragging) {
+      if (dragging && swallowClickAfterDrag) {
         const swallow = (clickEv) => {
           clickEv.stopPropagation();
           clickEv.preventDefault();
-          button.removeEventListener("click", swallow, true);
+          handle.removeEventListener("click", swallow, true);
         };
-        button.addEventListener("click", swallow, true);
-        button.blur();
+        handle.addEventListener("click", swallow, true);
+        handle.blur?.();
       }
     };
 

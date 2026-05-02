@@ -45,6 +45,10 @@ function buildCard(shadow, bodyHTML) {
   shadow.appendChild(card);
   card.querySelector(".rr-close").onclick = () => collapseToIcon(shadow);
   wireThemeToggle(card);
+  enableVerticalDrag(card.querySelector(".rr-header"), shadow.host, {
+    swallowClickAfterDrag: false,
+    ignoreSelector: "button",
+  });
   return card;
 }
 
@@ -106,9 +110,9 @@ function showResult(shadow, data) {
         <p>${escapeHTML(summary)}</p>
       </div>
       ${renderClausesHTML(data.clauses)}
-      <div class="rr-actions">
-        <button class="rr-btn rr-btn-primary" id="rr-accept">I've read this &ndash; Don't show again</button>
-      </div>
+    </div>
+    <div class="rr-actions">
+      <button class="rr-btn rr-btn-primary" id="rr-accept">I've read this &ndash; Don't show again</button>
     </div>
   `
   );
