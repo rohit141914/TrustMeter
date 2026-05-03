@@ -114,6 +114,11 @@ function showResult(shadow, data) {
     <div class="rr-actions">
       <button class="rr-btn rr-btn-primary" id="rr-accept">I've read this &ndash; Don't show again</button>
     </div>
+    <div class="rr-coffee">
+      <a class="rr-coffee-link" href="https://buymeacoffee.com/readrules" target="_blank" rel="noopener noreferrer">
+        &#x2615; Buy me a coffee
+      </a>
+    </div>
   `
   );
   card.querySelector("#rr-accept").onclick = () => {
