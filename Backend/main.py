@@ -11,7 +11,7 @@ from schemas import SummarizeRequest, SummarizeResponse, IdentifyLinksRequest, I
 from prompt import SYSTEM_PROMPT
 from providers import get_provider
 from cache import TTLCache
-from database import init_db, db_get, db_set
+from database import init_db, db_get, db_set, db_get_identify, db_set_identify
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("read-rules")
@@ -58,6 +58,23 @@ async def health():
 @app.post("/identify-links", response_model=IdentifyLinksResponse)
 async def identify_links(req: IdentifyLinksRequest):
     logger.info(">>> Identify links | domain=%s | %d links", req.domain, len(req.links))
+
+    cache_key = f"identify:{req.domain}" if req.domain else None
+
+    if cache_key:
+        cached = cache.get(cache_key)
+        if cached:
+            logger.info("<<< Identify cache hit (memory) for %s", req.domain)
+            return cached
+
+    if req.domain:
+        db_result = await db_get_identify(req.domain)
+        if db_result and "links" in db_result:
+            logger.info("<<< Identify cache hit (database) for %s | populating memory cache", req.domain)
+            if cache_key:
+                cache.set(cache_key, db_result)
+            return db_result
+
     links_text = "\n".join(f"{l.label} | {l.url}" for l in req.links[:200])
     try:
         result = await provider.analyze(links_text, IDENTIFY_PROMPT)
@@ -67,8 +84,15 @@ async def identify_links(req: IdentifyLinksRequest):
 
     raw_links = result.get("links", [])
     policy_links = [PolicyLink(label=l.get("label", ""), url=l.get("url", "")) for l in raw_links if l.get("url")]
-    logger.info("<<< Identified %d policy links", len(policy_links))
-    return IdentifyLinksResponse(links=policy_links)
+    response_dict = IdentifyLinksResponse(links=policy_links).model_dump()
+
+    if req.domain:
+        await db_set_identify(req.domain, response_dict)
+    if cache_key:
+        cache.set(cache_key, response_dict)
+
+    logger.info("<<< Identified %d policy links | saved to DB + memory", len(policy_links))
+    return response_dict
 
 
 @app.post("/summarize", response_model=SummarizeResponse)
