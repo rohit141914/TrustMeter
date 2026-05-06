@@ -21,13 +21,11 @@ class IdentifyLinksResponse(BaseModel):
     links: list[PolicyLink]
 
 
-class FlaggedClause(BaseModel):
-    text: str
+class Finding(BaseModel):
+    title: str
     risk: str
-    reason: str
+    bullets: list[str]
 
 
 class SummarizeResponse(BaseModel):
-    summary: str
-    risk_level: str
-    clauses: list[FlaggedClause]
+    findings: list[Finding]

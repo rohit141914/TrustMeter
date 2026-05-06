@@ -106,24 +106,26 @@ Communication between popup, content script, and background uses `chrome.runtime
 **Response (expected format):**
 ```json
 {
-  "summary": "This site collects personal data and shares it with third-party advertisers...",
-  "risk_level": "high",
-  "clauses": [
+  "findings": [
     {
-      "text": "We may sell your data to third parties",
+      "title": "Data Sharing",
       "risk": "high",
-      "reason": "Personal data could be shared without explicit consent"
+      "bullets": [
+        "Your data may be sold to third parties",
+        "No explicit consent required",
+        "Covers personal and behavioral data"
+      ]
     },
     {
-      "text": "We use cookies for analytics",
+      "title": "Cookie Tracking",
       "risk": "low",
-      "reason": "Standard analytics tracking"
+      "bullets": ["Standard analytics tracking only"]
     }
   ]
 }
 ```
 
-The frontend also handles a plain string response (just `summary` as text) for backward compatibility.
+Findings are sorted high → medium → low by the backend before they reach the overlay.
 
 ---
 

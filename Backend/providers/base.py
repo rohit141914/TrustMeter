@@ -12,9 +12,8 @@ class LLMProvider(ABC):
     @abstractmethod
     async def analyze(self, content: str, system_prompt: str) -> dict:
         """
-        Send policy text to the LLM and return a parsed dict with:
-          - summary: str
-          - risk_level: "high" | "medium" | "low"
-          - clauses: list[dict] each with text, risk, reason
+        Send policy text to the LLM and return a parsed dict matching the
+        contract defined by the system prompt — currently:
+          - findings: list[dict] each with title, risk, bullets
         """
         ...

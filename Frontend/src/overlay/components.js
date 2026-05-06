@@ -1,6 +1,13 @@
 import { RISK_COLORS } from "../constants";
 import { escapeHTML } from "../utils";
 
+const RISK_SHORT = {
+  high: { label: "High", emoji: "\u{1F534}" },
+  medium: { label: "Med", emoji: "\u{1F7E1}" },
+  low: { label: "Low", emoji: "\u{1F7E2}" },
+  unknown: { label: "N/A", emoji: "\u{26AA}" },
+};
+
 export function createIconWrap({ onClick, tooltip }) {
   const wrap = document.createElement("div");
   wrap.className = "rr-icon-wrap";
@@ -27,19 +34,28 @@ export function normalizeRiskKey(key) {
   return RISK_COLORS[key] ? key : "unknown";
 }
 
-export function renderClausesHTML(clauses) {
-  if (!clauses?.length) return "";
-  const items = clauses
-    .map((c) => {
-      const riskKey = normalizeRiskKey(c.risk);
+export function renderFindingsHTML(findings) {
+  if (!findings?.length) {
+    return `<p class="rr-empty">No findings.</p>`;
+  }
+  const total = findings.length;
+  return findings
+    .map((f, i) => {
+      const riskKey = normalizeRiskKey(f.risk);
+      const sev = RISK_SHORT[riskKey];
+      const bullets = (f.bullets || [])
+        .filter((b) => b && String(b).trim())
+        .map((b) => `<li>${escapeHTML(String(b).trim())}</li>`)
+        .join("");
       return `
-      <div class="rr-clause rr-risk-${riskKey}">
-        <span class="rr-clause-badge">${escapeHTML((c.risk || "info").toUpperCase())}</span>
-        <p class="rr-clause-label">What the policy says</p>
-        <p class="rr-clause-text">${escapeHTML(c.text)}</p>
-        ${c.reason ? `<p class="rr-clause-label">Why this matters</p><p class="rr-clause-reason">${escapeHTML(c.reason)}</p>` : ""}
+      <div class="rr-finding rr-risk-${riskKey}">
+        <div class="rr-finding-header">
+          <span class="rr-finding-counter">${i + 1}/${total}</span>
+          <span class="rr-finding-title">${escapeHTML(f.title || "")}</span>
+          <span class="rr-finding-sev">${sev.emoji} ${escapeHTML(sev.label)}</span>
+        </div>
+        ${bullets ? `<ul class="rr-finding-bullets">${bullets}</ul>` : ""}
       </div>`;
     })
     .join("");
-  return `<div class="rr-clauses"><h4>Flagged Clauses</h4>${items}</div>`;
 }

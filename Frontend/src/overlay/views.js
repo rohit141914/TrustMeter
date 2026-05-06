@@ -1,19 +1,17 @@
 import {
-  RISK_COLORS,
   POLICY_BROAD_WORDS,
   STRIPPED_ELEMENTS,
   MAX_POLICY_TEXT_LENGTH,
   MAX_POLICIES_TO_FETCH,
   MSG,
 } from "../constants";
-import { createCard, clearContent, dismiss, escapeHTML } from "../utils";
+import { createCard, clearContent, dismiss } from "../utils";
 import { getShadow, enableVerticalDrag } from "./host";
 import { wireThemeToggle } from "./theme";
 import {
   createIconWrap,
   headerHTML,
-  normalizeRiskKey,
-  renderClausesHTML,
+  renderFindingsHTML,
 } from "./components";
 
 const domain = window.location.hostname;
@@ -94,22 +92,13 @@ function showError(shadow) {
 }
 
 function showResult(shadow, data) {
-  const summary =
-    typeof data === "string" ? data : data.summary || "No summary available.";
-  const riskLevel = data.risk_level || "unknown";
-  const risk = RISK_COLORS[riskLevel] || RISK_COLORS.unknown;
-  const riskKey = normalizeRiskKey(riskLevel);
+  const findings = Array.isArray(data?.findings) ? data.findings : [];
 
   const card = buildCard(
     shadow,
     `
     <div class="rr-body">
-      <div class="rr-risk-badge rr-risk-${riskKey}">${escapeHTML(risk.label)}</div>
-      <div class="rr-summary">
-        <h4>Summary</h4>
-        <p>${escapeHTML(summary)}</p>
-      </div>
-      ${renderClausesHTML(data.clauses)}
+      ${renderFindingsHTML(findings)}
     </div>
     <div class="rr-actions">
       <button class="rr-btn rr-btn-primary" id="rr-accept">I've read this &ndash; Don't show again</button>

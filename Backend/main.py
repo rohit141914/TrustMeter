@@ -90,12 +90,15 @@ async def summarize(req: SummarizeRequest):
         db_doc = await db_get(req.domain)
         if db_doc:
             stored_hash = db_doc.get("content_hash")
-            if stored_hash == content_hash:
+            stored_result = db_doc.get("result") or {}
+            if stored_hash == content_hash and "findings" in stored_result:
                 logger.info("<<< Cache hit (database) for %s | populating memory cache", req.domain)
-                result = db_doc["result"]
-                cache.set(content_hash, result)
-                return result
-            logger.info("--- Policy changed for %s | re-analyzing...", req.domain)
+                cache.set(content_hash, stored_result)
+                return stored_result
+            if "findings" not in stored_result:
+                logger.info("--- Stored result for %s is in legacy shape | re-analyzing...", req.domain)
+            else:
+                logger.info("--- Policy changed for %s | re-analyzing...", req.domain)
 
     # 3. Call LLM
     logger.info("--- Sending to %s (%s)...", settings.llm_provider, settings.llm_model)
@@ -121,31 +124,36 @@ async def summarize(req: SummarizeRequest):
     elapsed = time.time() - start
     logger.info("--- LLM responded in %.1fs", elapsed)
 
-    # Normalize risk levels to ensure frontend compatibility
+    # Normalize findings: coerce risk, clean bullets, drop empties, sort high → medium → low
     _risk_order = {"high": 0, "medium": 1, "low": 2}
     valid_risks = set(_risk_order.keys())
-    if result.get("risk_level") not in valid_risks:
-        result["risk_level"] = "medium"
-    for clause in result.get("clauses", []):
-        if clause.get("risk") not in valid_risks:
-            clause["risk"] = "medium"
 
-    # Sort clauses: high → medium → low
-    result["clauses"] = sorted(
-        result.get("clauses", []),
-        key=lambda c: _risk_order.get(c.get("risk"), 1),
-    )
+    raw_findings = result.get("findings") or []
+    cleaned: list[dict] = []
+    for f in raw_findings:
+        if not isinstance(f, dict):
+            continue
+        title = (f.get("title") or "").strip()
+        if not title:
+            continue
+        risk = f.get("risk") if f.get("risk") in valid_risks else "medium"
+        raw_bullets = f.get("bullets") or []
+        bullets = [str(b).strip() for b in raw_bullets if isinstance(b, (str, int, float)) and str(b).strip()][:3]
+        if not bullets:
+            continue
+        cleaned.append({"title": title, "risk": risk, "bullets": bullets})
+
+    cleaned.sort(key=lambda f: _risk_order.get(f["risk"], 1))
+    result = {"findings": cleaned}
 
     # Store in MongoDB and memory cache
     if req.domain:
         await db_set(req.domain, result, links=[l.model_dump() for l in req.links], content_hash=content_hash)
     cache.set(content_hash, result)
 
-    clause_count = len(result.get("clauses", []))
     logger.info(
-        "<<< Done | risk=%s | %d clauses | saved to DB + memory cache as %s",
-        result["risk_level"],
-        clause_count,
+        "<<< Done | %d findings | saved to DB + memory cache as %s",
+        len(cleaned),
         req.domain or content_hash,
     )
 
