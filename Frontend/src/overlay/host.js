@@ -6,7 +6,7 @@ export function getShadow() {
   if (shadowRoot) return shadowRoot;
 
   const host = document.createElement("div");
-  host.id = "read-rules-host";
+  host.id = "trustmeter-host";
   host.style.cssText =
     "all:initial; position:fixed; z-index:2147483647; top:50%; right:20px; transform:translateY(-50%);";
   document.body.appendChild(host);

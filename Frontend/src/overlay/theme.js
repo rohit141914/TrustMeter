@@ -1,7 +1,7 @@
 let theme = "dark";
 
 export function wireThemeToggle(card) {
-  const btn = card.querySelector(".rr-theme-toggle");
+  const btn = card.querySelector(".tm-theme-toggle");
   if (!btn) return;
   applyTheme(card);
   btn.onclick = () => {
@@ -11,7 +11,7 @@ export function wireThemeToggle(card) {
 }
 
 export function applyTheme(card) {
-  card.classList.toggle("rr-theme-dark", theme === "dark");
-  const btn = card.querySelector(".rr-theme-toggle");
+  card.classList.toggle("tm-theme-dark", theme === "dark");
+  const btn = card.querySelector(".tm-theme-toggle");
   if (btn) btn.innerHTML = theme === "dark" ? "&#x2600;&#xfe0f;" : "&#x1f319;";
 }

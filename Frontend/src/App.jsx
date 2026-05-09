@@ -55,7 +55,7 @@ function App() {
       <header className="popup-header">
         <div className="logo">
           <span className="logo-icon">&#x1f6e1;</span>
-          <h1>Read Rules</h1>
+          <h1>TrustMeter</h1>
         </div>
         <p className="tagline">Your privacy watchdog</p>
       </header>
@@ -86,7 +86,7 @@ function App() {
         {loading ? (
           <p className="empty-state">Loading...</p>
         ) : domains.length === 0 ? (
-          <p className="empty-state">No dismissed sites yet. Browse the web and Read Rules will analyze pages for you.</p>
+          <p className="empty-state">No dismissed sites yet. Browse the web and TrustMeter will analyze pages for you.</p>
         ) : (
           <>
             <ul>
@@ -107,7 +107,7 @@ function App() {
       </section>
 
       <footer className="popup-footer">
-        <p>Read Rules v1.0</p>
+        <p>TrustMeter v1.0</p>
       </footer>
     </div>
   );

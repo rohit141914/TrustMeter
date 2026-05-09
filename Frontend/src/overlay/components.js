@@ -10,22 +10,22 @@ const RISK_SHORT = {
 
 export function createIconWrap({ onClick, tooltip }) {
   const wrap = document.createElement("div");
-  wrap.className = "rr-icon-wrap";
+  wrap.className = "tm-icon-wrap";
   wrap.innerHTML = `
-    <span class="rr-icon-tooltip">${escapeHTML(tooltip)}</span>
-    <button class="rr-icon-btn" aria-label="${escapeHTML(tooltip)}">&#x1f6e1;</button>
+    <span class="tm-icon-tooltip">${escapeHTML(tooltip)}</span>
+    <button class="tm-icon-btn" aria-label="${escapeHTML(tooltip)}">&#x1f6e1;</button>
   `;
-  wrap.querySelector(".rr-icon-btn").onclick = onClick;
+  wrap.querySelector(".tm-icon-btn").onclick = onClick;
   return wrap;
 }
 
 export function headerHTML() {
   return `
-    <div class="rr-header">
-      <span class="rr-logo">&#x1f6e1;</span>
-      <span class="rr-title">Read Rules</span>
-      <button class="rr-theme-toggle" aria-label="Toggle theme"></button>
-      <button class="rr-close" aria-label="Close">&times;</button>
+    <div class="tm-header">
+      <span class="tm-logo">&#x1f6e1;</span>
+      <span class="tm-title">TrustMeter</span>
+      <button class="tm-theme-toggle" aria-label="Toggle theme"></button>
+      <button class="tm-close" aria-label="Close">&times;</button>
     </div>
   `;
 }
@@ -36,7 +36,7 @@ export function normalizeRiskKey(key) {
 
 export function renderFindingsHTML(findings) {
   if (!findings?.length) {
-    return `<p class="rr-empty">No findings.</p>`;
+    return `<p class="tm-empty">No findings.</p>`;
   }
   const total = findings.length;
   return findings
@@ -48,13 +48,13 @@ export function renderFindingsHTML(findings) {
         .map((b) => `<li>${escapeHTML(String(b).trim())}</li>`)
         .join("");
       return `
-      <div class="rr-finding rr-risk-${riskKey}">
-        <div class="rr-finding-header">
-          <span class="rr-finding-counter">${i + 1}/${total}</span>
-          <span class="rr-finding-title">${escapeHTML(f.title || "")}</span>
-          <span class="rr-finding-sev">${sev.emoji} ${escapeHTML(sev.label)}</span>
+      <div class="tm-finding tm-risk-${riskKey}">
+        <div class="tm-finding-header">
+          <span class="tm-finding-counter">${i + 1}/${total}</span>
+          <span class="tm-finding-title">${escapeHTML(f.title || "")}</span>
+          <span class="tm-finding-sev">${sev.emoji} ${escapeHTML(sev.label)}</span>
         </div>
-        ${bullets ? `<ul class="rr-finding-bullets">${bullets}</ul>` : ""}
+        ${bullets ? `<ul class="tm-finding-bullets">${bullets}</ul>` : ""}
       </div>`;
     })
     .join("");

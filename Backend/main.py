@@ -17,7 +17,7 @@ from cache import TTLCache
 from database import init_db, db_get, db_set, db_get_identify, db_set_identify
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("read-rules")
+logger = logging.getLogger("trustmeter")
 
 class _NoHealthCheck(logging.Filter):
     def filter(self, record):
@@ -30,13 +30,13 @@ provider = get_provider(settings)
 cache = TTLCache(ttl=settings.cache_ttl, clean_interval=settings.cache_clean_interval)
 init_db(settings.mongo_uri, settings.mongo_db_name)
 
-logger.info("=== Read Rules API ===")
+logger.info("=== TrustMeter API ===")
 logger.info("Provider: %s | Model: %s", settings.llm_provider, settings.llm_model)
 logger.info("Cache TTL: %ds | MongoDB: %s/%s", settings.cache_ttl, settings.mongo_uri, settings.mongo_db_name)
 
 limiter = Limiter(key_func=get_remote_address)
 
-app = FastAPI(title="Read Rules API", version="1.0.0")
+app = FastAPI(title="TrustMeter API", version="1.0.0")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 

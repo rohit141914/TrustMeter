@@ -29,7 +29,7 @@ function renderIcon(shadow) {
     tooltip: "Start analysing",
   });
   shadow.appendChild(wrap);
-  enableVerticalDrag(wrap.querySelector(".rr-icon-btn"), shadow.host);
+  enableVerticalDrag(wrap.querySelector(".tm-icon-btn"), shadow.host);
 }
 
 function collapseToIcon(shadow) {
@@ -41,9 +41,9 @@ function buildCard(shadow, bodyHTML) {
   const card = createCard();
   card.innerHTML = headerHTML() + bodyHTML;
   shadow.appendChild(card);
-  card.querySelector(".rr-close").onclick = () => collapseToIcon(shadow);
+  card.querySelector(".tm-close").onclick = () => collapseToIcon(shadow);
   wireThemeToggle(card);
-  enableVerticalDrag(card.querySelector(".rr-header"), shadow.host, {
+  enableVerticalDrag(card.querySelector(".tm-header"), shadow.host, {
     swallowClickAfterDrag: false,
     ignoreSelector: "button",
   });
@@ -54,8 +54,8 @@ function showLoading(shadow) {
   buildCard(
     shadow,
     `
-    <div class="rr-body rr-loading">
-      <div class="rr-spinner"></div>
+    <div class="tm-body tm-loading">
+      <div class="tm-spinner"></div>
       <p>Scanning terms &amp; privacy policies...</p>
     </div>
   `
@@ -66,9 +66,9 @@ function showEmpty(shadow) {
   buildCard(
     shadow,
     `
-    <div class="rr-body rr-error">
+    <div class="tm-body tm-error">
       <p><strong>No policies found on this page.</strong></p>
-      <p>Read Rules couldn't detect any Terms or Privacy links here.</p>
+      <p>TrustMeter couldn't detect any Terms or Privacy links here.</p>
     </div>
   `
   );
@@ -78,14 +78,14 @@ function showError(shadow) {
   const card = buildCard(
     shadow,
     `
-    <div class="rr-body rr-error">
+    <div class="tm-body tm-error">
       <p><strong>Could not analyze this page.</strong></p>
       <p>The backend service may be offline. Make sure it's running at <code>${import.meta.env.VITE_API_URL}</code>.</p>
-      <button class="rr-btn rr-btn-ghost" id="rr-retry">Retry</button>
+      <button class="tm-btn tm-btn-ghost" id="tm-retry">Retry</button>
     </div>
   `
   );
-  card.querySelector("#rr-retry").onclick = () => {
+  card.querySelector("#tm-retry").onclick = () => {
     cachedResult = null;
     triggerAnalysis(shadow);
   };
@@ -97,20 +97,20 @@ function showResult(shadow, data) {
   const card = buildCard(
     shadow,
     `
-    <div class="rr-body">
+    <div class="tm-body">
       ${renderFindingsHTML(findings)}
     </div>
-    <div class="rr-actions">
-      <button class="rr-btn rr-btn-primary" id="rr-accept">I've read this &ndash; Don't show again</button>
+    <div class="tm-actions">
+      <button class="tm-btn tm-btn-primary" id="tm-accept">I've read this &ndash; Don't show again</button>
     </div>
-    <div class="rr-coffee">
-      <a class="rr-coffee-link" href="https://buymeacoffee.com/readrules" target="_blank" rel="noopener noreferrer">
+    <div class="tm-coffee">
+      <a class="tm-coffee-link" href="https://buymeacoffee.com/trustmeter" target="_blank" rel="noopener noreferrer">
         &#x2615; Buy me a coffee
       </a>
     </div>
   `
   );
-  card.querySelector("#rr-accept").onclick = () => {
+  card.querySelector("#tm-accept").onclick = () => {
     chrome.storage.local.set({ [domain]: true });
     dismiss();
   };
@@ -186,7 +186,7 @@ async function triggerAnalysis(shadow) {
     cachedResult = response;
     showResult(shadow, response);
   } catch (err) {
-    console.error("Read Rules: Error analyzing policies:", err);
+    console.error("TrustMeter: Error analyzing policies:", err);
     showError(shadow);
   } finally {
     analysisInFlight = false;

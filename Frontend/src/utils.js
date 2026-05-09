@@ -1,15 +1,15 @@
 export function createCard() {
   const card = document.createElement("div");
-  card.className = "rr-card";
+  card.className = "tm-card";
   return card;
 }
 
 export function clearContent(shadow) {
-  shadow.querySelectorAll(".rr-card, .rr-icon-wrap").forEach((el) => el.remove());
+  shadow.querySelectorAll(".tm-card, .tm-icon-wrap").forEach((el) => el.remove());
 }
 
 export function dismiss() {
-  const host = document.getElementById("read-rules-host");
+  const host = document.getElementById("trustmeter-host");
   if (host) host.remove();
 }
 

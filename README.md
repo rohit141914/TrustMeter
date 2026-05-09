@@ -1,4 +1,4 @@
-# Read Rules
+# TrustMeter
 
 A Chrome extension that automatically detects, fetches, and analyzes Terms of Service and Privacy Policies on any website — giving you a plain-English risk summary and a list of flagged clauses before you click "I Agree".
 
@@ -64,7 +64,7 @@ A Chrome extension that automatically detects, fetches, and analyzes Terms of Se
 ## Project Structure
 
 ```
-read-rules/
+trustmeter/
 ├── Backend/
 │   ├── main.py               # FastAPI app, endpoints, caching logic
 │   ├── database.py           # MongoDB async operations (Motor)
@@ -195,7 +195,7 @@ Each MongoDB document stores:
 
 ## Popup
 
-Click the Read Rules icon in the Chrome toolbar to:
+Click the TrustMeter icon in the Chrome toolbar to:
 
 - See which domain you're currently on and whether it's been dismissed
 - View all dismissed domains
@@ -217,4 +217,4 @@ cd Frontend && npm run dev
 cd Frontend && npm run build
 ```
 
-After rebuilding, go to `chrome://extensions` and click the reload icon on the Read Rules card.
+After rebuilding, go to `chrome://extensions` and click the reload icon on the TrustMeter card.

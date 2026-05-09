@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: read-rules-api
+    name: trustmeter-api
     runtime: python
     rootDir: Backend
     buildCommand: pip install -r requirements.txt

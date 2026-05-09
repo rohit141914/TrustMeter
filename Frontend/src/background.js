@@ -1,7 +1,7 @@
 import { MSG } from "./constants";
 
 chrome.runtime.onInstalled.addListener(() => {
-  console.log("Read Rules installed");
+  console.log("TrustMeter installed");
 });
 
 // Listen for messages from popup or content scripts

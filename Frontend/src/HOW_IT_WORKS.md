@@ -1,8 +1,8 @@
-# Read Rules - How It Works
+# TrustMeter - How It Works
 
 ## Overview
 
-Read Rules is a Chrome Extension (Manifest V3) that automatically detects Terms & Conditions and Privacy Policy links on any website, fetches and extracts their content, sends it to a backend API for summarization, and displays the results in an overlay popup with risk-level highlights.
+TrustMeter is a Chrome Extension (Manifest V3) that automatically detects Terms & Conditions and Privacy Policy links on any website, fetches and extracts their content, sends it to a backend API for summarization, and displays the results in an overlay popup with risk-level highlights.
 
 ---
 
@@ -68,7 +68,7 @@ Backend (separate service, not in this repo)
 
 ## Flow: Extension Popup (Icon Click)
 
-1. User clicks the Read Rules icon in Chrome toolbar.
+1. User clicks the TrustMeter icon in Chrome toolbar.
 2. `index.html` loads, which mounts the React `<App />` component.
 3. App queries `chrome.tabs` for the current tab's domain.
 4. App sends `GET_DISMISSED_DOMAINS` message to the background service worker.
