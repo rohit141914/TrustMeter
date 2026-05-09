@@ -50,7 +50,7 @@
 .tm-header:active { cursor: grabbing; }
 .tm-header button { cursor: pointer; }
 
-.tm-logo { font-size: 18px; }
+.tm-logo { width: 20px; height: 20px; display: block; flex-shrink: 0; }
 
 .tm-title {
   font-weight: 600;
@@ -292,6 +292,13 @@
   background: #1e293b;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.24);
   outline: none;
+}
+
+.tm-icon-img {
+  width: 28px;
+  height: 28px;
+  display: block;
+  pointer-events: none;
 }
 
 .tm-icon-tooltip {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { MSG } from "./constants";
+import iconUrl from "./images/icon.png";
 
 function App() {
   const [domains, setDomains] = useState([]);
@@ -54,7 +55,7 @@ function App() {
     <div className="popup">
       <header className="popup-header">
         <div className="logo">
-          <span className="logo-icon">&#x1f6e1;</span>
+          <img className="logo-icon" src={iconUrl} alt="" />
           <h1>TrustMeter</h1>
         </div>
         <p className="tagline">Your privacy watchdog</p>

@@ -5,9 +5,19 @@
   "version": "1.0",
   "permissions": ["storage", "activeTab"],
   "host_permissions": ["<all_urls>"],
+  "icons": {
+    "16": "src/images/icon.png",
+    "48": "src/images/icon.png",
+    "128": "src/images/icon.png"
+  },
   "action": {
     "default_popup": "index.html",
-    "default_title": "TrustMeter"
+    "default_title": "TrustMeter",
+    "default_icon": {
+      "16": "src/images/icon.png",
+      "48": "src/images/icon.png",
+      "128": "src/images/icon.png"
+    }
   },
   "background": {
     "service_worker": "src/background.js"

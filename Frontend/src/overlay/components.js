@@ -1,5 +1,8 @@
 import { RISK_COLORS } from "../constants";
 import { escapeHTML } from "../utils";
+import iconAsset from "../images/icon.png";
+
+const iconUrl = chrome.runtime.getURL(iconAsset.replace(/^\//, ""));
 
 const RISK_SHORT = {
   high: { label: "High", emoji: "\u{1F534}" },
@@ -13,7 +16,7 @@ export function createIconWrap({ onClick, tooltip }) {
   wrap.className = "tm-icon-wrap";
   wrap.innerHTML = `
     <span class="tm-icon-tooltip">${escapeHTML(tooltip)}</span>
-    <button class="tm-icon-btn" aria-label="${escapeHTML(tooltip)}">&#x1f6e1;</button>
+    <button class="tm-icon-btn" aria-label="${escapeHTML(tooltip)}"><img class="tm-icon-img" src="${iconUrl}" alt="" /></button>
   `;
   wrap.querySelector(".tm-icon-btn").onclick = onClick;
   return wrap;
@@ -22,7 +25,7 @@ export function createIconWrap({ onClick, tooltip }) {
 export function headerHTML() {
   return `
     <div class="tm-header">
-      <span class="tm-logo">&#x1f6e1;</span>
+      <img class="tm-logo" src="${iconUrl}" alt="" />
       <span class="tm-title">TrustMeter</span>
       <button class="tm-theme-toggle" aria-label="Toggle theme"></button>
       <button class="tm-close" aria-label="Close">&times;</button>
