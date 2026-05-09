@@ -3,8 +3,11 @@ import json
 import logging
 import time
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 from config import Settings
 from schemas import SummarizeRequest, SummarizeResponse, IdentifyLinksRequest, IdentifyLinksResponse, PolicyLink
@@ -31,11 +34,16 @@ logger.info("=== Read Rules API ===")
 logger.info("Provider: %s | Model: %s", settings.llm_provider, settings.llm_model)
 logger.info("Cache TTL: %ds | MongoDB: %s/%s", settings.cache_ttl, settings.mongo_uri, settings.mongo_db_name)
 
+limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI(title="Read Rules API", version="1.0.0")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["chrome-extension://*"],
+    # allow_origins=[f"chrome-extension://{YOUR_EXT_ID}"]
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
 )
@@ -56,7 +64,8 @@ async def health():
 
 
 @app.post("/identify-links", response_model=IdentifyLinksResponse)
-async def identify_links(req: IdentifyLinksRequest):
+@limiter.limit("20/minute;200/day")
+async def identify_links(request: Request, req: IdentifyLinksRequest):
     logger.info(">>> Identify links | domain=%s | %d links", req.domain, len(req.links))
 
     cache_key = f"identify:{req.domain}" if req.domain else None
@@ -96,7 +105,8 @@ async def identify_links(req: IdentifyLinksRequest):
 
 
 @app.post("/summarize", response_model=SummarizeResponse)
-async def summarize(req: SummarizeRequest):
+@limiter.limit("10/minute;100/day")
+async def summarize(request: Request, req: SummarizeRequest):
     content_len = len(req.content)
     content_preview = req.content[:100].replace("\n", " ")
     logger.info(">>> Request received | domain=%s | %d chars | '%s...'", req.domain, content_len, content_preview)

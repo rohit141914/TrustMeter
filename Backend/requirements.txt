@@ -6,3 +6,4 @@ anthropic==0.52.0
 google-genai==1.14.0
 httpx==0.28.1
 motor==3.7.0
+slowapi==0.1.9
