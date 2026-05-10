@@ -1,0 +1,69 @@
+# DigitalOcean App Platform spec — TrustMeter backend
+# Deploy: https://cloud.digitalocean.com/apps -> Create App -> "From source code"
+# Or via CLI: doctl apps create --spec .do/app.yaml
+#
+# After first deploy, set the SECRET-typed envs (GEMINI_API_KEY, MONGO_URI) in
+# the App Platform UI: App -> Settings -> {component} -> Environment Variables.
+
+name: trustmeter-backend
+region: blr   # Bangalore. Change to nyc / sgp / fra / ams / lon / sfo / tor / syd / sgp if you prefer.
+
+services:
+  - name: api
+    github:
+      repo: rohit141914/TrustMeter
+      branch: main
+      deploy_on_push: true
+
+    source_dir: Backend
+    environment_slug: python
+    build_command: pip install -r requirements.txt
+    run_command: uvicorn main:app --host 0.0.0.0 --port 8080
+
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: basic-xxs   # $5/mo, 512MB RAM, 1 shared vCPU
+
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 15
+      period_seconds: 30
+      failure_threshold: 3
+
+    envs:
+      # ---- LLM ----
+      - key: LLM_PROVIDER
+        scope: RUN_TIME
+        value: gemini
+
+      - key: LLM_MODEL
+        scope: RUN_TIME
+        value: gemini-2.5-flash
+
+      - key: LLM_MAX_TOKENS
+        scope: RUN_TIME
+        value: "2048"
+
+      - key: GEMINI_API_KEY
+        scope: RUN_TIME
+        type: SECRET   # Set the actual value in the App Platform UI after first deploy.
+
+      # ---- MongoDB ----
+      - key: MONGO_URI
+        scope: RUN_TIME
+        type: SECRET   # Atlas connection string. Set in UI after first deploy.
+
+      - key: MONGO_DB_NAME
+        scope: RUN_TIME
+        value: trustmeter
+
+      # ---- Cache ----
+      # 7 days — most policies don't change weekly, and content-hash changes
+      # force a fresh analysis automatically. Big lever on LLM bill.
+      - key: CACHE_TTL
+        scope: RUN_TIME
+        value: "604800"
+
+      - key: CACHE_CLEAN_INTERVAL
+        scope: RUN_TIME
+        value: "3600"
