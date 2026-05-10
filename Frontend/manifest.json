@@ -1,8 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "TrustMeter",
-  "description": "Automatically detects, summarizes, and highlights risky clauses in Terms & Conditions and Privacy Policies.",
-  "version": "1.0",
+  "name": "TrustMeter — Terms & Privacy Analyzer",
+  "short_name": "TrustMeter",
+  "description": "TrustMeter scans Terms of Service and Privacy Policies on any site, highlights risky clauses, and shows a clear risk summary so you know what you're agreeing to.",
+  "version": "1.0.0",
+  "version_name": "1.0.0",
+  "author": "Rohit Nain",
+  "homepage_url": "https://github.com/rohit141914/TrustMeter",
   "permissions": ["storage", "activeTab"],
   "host_permissions": ["<all_urls>"],
   "icons": {
