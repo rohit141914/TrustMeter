@@ -43,6 +43,7 @@
   padding: 12px 16px;
   background: var(--tm-header-bg);
   color: var(--tm-header-text);
+  border-bottom: 1px solid var(--tm-actions-border);
   cursor: grab;
   user-select: none;
 }
