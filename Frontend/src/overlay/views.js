@@ -104,9 +104,21 @@ function showResult(shadow, data) {
       <button class="tm-btn tm-btn-primary" id="tm-accept">I've read this &ndash; Don't show again</button>
     </div>
     <div class="tm-coffee">
-      <a class="tm-coffee-link" href="https://buymeacoffee.com/trustmeter" target="_blank" rel="noopener noreferrer">
-        &#x2615; Buy me a coffee
-      </a>
+      <span class="tm-credits"><span class="tm-by-label">By:</span>
+        <a class="tm-social-link" href="https://www.linkedin.com/in/rohitnain" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+            <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.23 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.46c.98 0 1.77-.77 1。77-1。72V1。72C24 .77 23。21 0 22。23 0z"/>
+          </svg>
+        </a>
+        <a class="tm-social-link" href="https://www.linkedin.com/in/hello-world-hi" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+            <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.23 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.46c.98 0 1.77-.77 1。77-1。72V1。72C24 .77 23。21 0 22。23 0z"/>
+          </svg>
+        </a>
+        </span>
+        <a href="https://ko-fi.com/K3K51ZABO7" target="_blank" rel="noopener noreferrer">
+          <img height="36" style="border:0px;height:36px;vertical-align:middle;" src="https://storage.ko-fi.com/cdn/kofi6.png?v=6" alt="Buy Me a Coffee at ko-fi.com" />
+        </a>
     </div>
   `
   );
