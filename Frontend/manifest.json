@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "TrustMeter",
+  "name": "TrustMeter AI — Privacy & Terms Analyzer",
   "short_name": "TrustMeter",
   "description": "Understand any site's privacy & terms in 8 points, before you sign up.",
-  "version": "1.0.0",
-  "version_name": "1.0.0",
+  "version": "1.0.1",
+  "version_name": "1.0.1a",
   "author": "Rohit Nain",
   "homepage_url": "https://github.com/rohit141914/TrustMeter",
   "permissions": ["storage", "activeTab"],
